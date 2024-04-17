@@ -29,8 +29,6 @@ class EmployeeServiceImplTest {
     EmployeeServiceImpl employeeService;
     @Mock
     EmployeeRepository employeeRepository;
-    @Mock
-    ShiftRepository shiftRepository;
 
     Employee employee1;
     Employee employee2;
