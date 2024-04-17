@@ -13,6 +13,9 @@ public interface EmployeeService {
     List<Employee> getAllEmployees();
     Employee getEmployeeById(Long id);
     Employee getEmployeeByPESEL(String pesel);
+
+    Employee getEmployeeByfullName(String fullName);
+
     Employee addEmployeeToDatabase(Employee employee);
     Employee updateEmployeeOnDatabase(Employee employee);
     boolean deleteEmployeeFromDatabase(Long id);

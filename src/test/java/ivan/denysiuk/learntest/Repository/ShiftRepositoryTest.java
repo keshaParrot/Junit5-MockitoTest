@@ -98,10 +98,4 @@ class ShiftRepositoryTest {
         assertEquals(1,shiftRepository.count());
     }
 
-
-
-
-
-
-
 }

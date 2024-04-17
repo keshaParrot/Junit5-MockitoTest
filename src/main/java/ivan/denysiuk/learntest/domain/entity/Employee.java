@@ -1,14 +1,20 @@
 package ivan.denysiuk.learntest.domain.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,11 +22,12 @@ public class Employee {
     private String firstName;
     private String lastName;
     private Double rate;
+    private TypeOfContract typeOfContract;
     private String specialization;
     private LocalDateTime dateOfBirthday;
     private String PESEL;
     private String ZUSindex;
-    @OneToMany(mappedBy = "employee")
-    Set<Shift> workedShift;
+    @OneToMany(mappedBy = "employee",fetch = FetchType.EAGER)
+    Set<Shift> workedShift = new HashSet<>();
 
 }
