@@ -38,7 +38,7 @@ public class BootStrap implements CommandLineRunner {
 
         employeeRepository.save(employee);
 
-        System.out.println(employeeService.getMonthTax(employee.getId()));
-        System.out.println(employeeService.getMonthRevenue(employee.getId()));
+        System.out.println(employeeService.getMonthTax(employee.getId(),5));
+        System.out.println(employeeService.getMonthRevenue(employee.getId(),5));
     }
 }

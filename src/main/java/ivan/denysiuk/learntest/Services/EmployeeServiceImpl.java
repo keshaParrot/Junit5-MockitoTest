@@ -3,10 +3,10 @@ package ivan.denysiuk.learntest.Services;
 import ivan.denysiuk.learntest.Repository.EmployeeRepository;
 import ivan.denysiuk.learntest.Services.interfaces.EmployeeService;
 import ivan.denysiuk.learntest.domain.entity.Employee;
+import ivan.denysiuk.learntest.domain.entity.Shift;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,20 +113,24 @@ public class EmployeeServiceImpl implements EmployeeService {
      * Calculates months salary of the selected employee
      *
      * @param id of the selected employee
-     *        from date which we want to calculate
-     *        to date which we want to calculate
+     * @param month the month for which the salary should be calculated
      * @return month salary of selected employee
-     * TODO add to the parameters from...to the month and year for which we want to deduct the salary
      */
     @Override
-    public double getMonthSalary(Long id) {
+    public double getMonthSalary(Long id, int month) {
         Employee employee = employeeRepository.getEmployeeById(id);
         double totalSalary = 0.0;
 
         if(employee.getWorkedShift() == null || employee.getWorkedShift().isEmpty()){
             return totalSalary;
         }
+
         totalSalary = employee.getWorkedShift().stream()
+                .filter(shift -> {
+                    int shiftMonth = shift.getDate().getMonth().getValue();
+                    System.out.println(shiftMonth);
+                    return shiftMonth == month;
+                })
                 .mapToDouble(shift -> {
                     double hours = shift.getWorkedTime().getHours();
                     double minutes = shift.getWorkedTime().getMinutes();
@@ -141,14 +145,14 @@ public class EmployeeServiceImpl implements EmployeeService {
      * Calculates months Tax of the selected employee
      *
      * @param id of the selected employee
+     * @param month the month for which the tax should be calculated
      * @return Map of the all taxes selected by the employee id
-     * TODO add to the parameters from...to the month and year for which we want to deduct the Tax
      */
     @Override
-    public Map<String, Double> getMonthTax(Long id) {
-        double employeeSalary = getMonthSalary(id);
-
+    public Map<String, Double> getMonthTax(Long id, int month) {
         Map<String,Double> mapOfTax = new HashMap<>();
+
+        double employeeSalary = getMonthSalary(id,month);
 
         double SSC = getPercentage(employeeSalary,13.71);
         mapOfTax.put("social security contributions",SSC);
@@ -168,6 +172,13 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         return mapOfTax;
     }
+    /**
+     * Calculate percent of the total
+     *
+     * @param total from which we want to calculate percent
+     * @param percent
+     * @return percent of the total
+     */
     private double getPercentage(double total, double percent) {
         return total * (percent / 100.0);
     }
@@ -176,14 +187,13 @@ public class EmployeeServiceImpl implements EmployeeService {
      * Calculates months revenue of the selected employee
      *
      * @param id of the selected employee
+     * @param month the month for which the revenue should be calculated
      * @return revenue of the selected employee
-     *
-     * TODO add to the parameters from...to the month and year for which we want to deduct the revenue
      */
     @Override
-    public double getMonthRevenue(Long id) {
-        double employeeSalary = getMonthSalary(id);
-        Map<String,Double> mapOfTax = getMonthTax(id);
+    public double getMonthRevenue(Long id, int month) {
+        double employeeSalary = getMonthSalary(id, month);
+        Map<String,Double> mapOfTax = getMonthTax(id, month);
 
         double totalTax = mapOfTax.values().stream().mapToDouble(Double::doubleValue).sum();
 

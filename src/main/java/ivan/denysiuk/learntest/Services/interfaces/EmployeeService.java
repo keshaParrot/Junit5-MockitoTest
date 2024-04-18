@@ -20,7 +20,11 @@ public interface EmployeeService {
     Employee updateEmployeeOnDatabase(Employee employee);
     boolean deleteEmployeeFromDatabase(Long id);
     int countAllEmployees();
-    double getMonthSalary(Long id);
-    double getMonthRevenue(Long id);
-    Map<String,Double> getMonthTax(Long id);
+
+    double getMonthSalary(Long id, int month);
+
+    Map<String, Double> getMonthTax(Long id, int month);
+
+
+    double getMonthRevenue(Long id, int month);
 }

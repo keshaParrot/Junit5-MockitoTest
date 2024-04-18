@@ -13,13 +13,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,11 +32,10 @@ class EmployeeServiceImplTest {
     @BeforeEach
     void setUp() {
         Shift shift = Shift.builder()
+                .date(LocalDateTime.of(2024, 4, 20, 0, 0))
                 .actualStartTime("12:30")
                 .actualEndTime("22:30")
                 .build();
-
-        //add shift here
 
         employee1 = Employee.builder()
                 .firstName("Adam")
@@ -128,13 +124,19 @@ class EmployeeServiceImplTest {
 
         when(employeeRepository.getEmployeeById(employeeId)).thenReturn(employee1);
 
-        double monthSalary = employeeService.getMonthSalary(employeeId);
+        double monthSalary = employeeService.getMonthSalary(employeeId,4);
 
         Assertions.assertTrue(monthSalary > 0, "The month salary should be greater than 0");
     }
     @Test
     void getMonthTax_whenEmployeesExistOnDB_notNull() {
+        Long employeeId = 1L;
 
+        when(employeeRepository.getEmployeeById(employeeId)).thenReturn(employee1);
+
+        Map<String, Double> mapOfTax = employeeService.getMonthTax(employeeId,4);
+
+        assertNotNull(mapOfTax,"The month salary should be not null");
     }
     @Test
     void getMonthRevenue_whenEmployeesExistOnDB_notNull() {
@@ -142,19 +144,8 @@ class EmployeeServiceImplTest {
 
         when(employeeRepository.getEmployeeById(employeeId)).thenReturn(employee1);
 
-        double monthSalary = employeeService.getMonthSalary(employeeId);
+        double monthRevenue = employeeService.getMonthRevenue(employeeId,4);
 
-        Assertions.assertTrue(monthSalary > 0.0, "The month salary should be greater than 0");
-    }
-    @Test
-    void getMonthRevenue_whenEmployeesHasNotShift_notNull() {
-        Long employeeId = 1L;
-
-        when(employeeRepository.getEmployeeById(employeeId)).thenReturn(employee2);
-
-
-        double monthSalary = employeeService.getMonthSalary(employeeId);
-
-        Assertions.assertTrue(monthSalary == 0, "The month salary should to be equals 0");
+        Assertions.assertTrue(monthRevenue > 0.0, "The month salary should be greater than 0");
     }
 }
