@@ -4,6 +4,8 @@ import ivan.denysiuk.learntest.domain.entity.Shift;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
+
 /**
  * Repository for working with Shifts table on database.
  */
@@ -25,6 +27,6 @@ public interface ShiftRepository extends JpaRepository<Shift,Long> {
      * @return the searched shift
      */
     @Query("SELECT s from Shift s where s.employee.id = :employeeId")
-    Shift getShiftByEmployeeId(Long employeeId);
+    List<Shift> getShiftsByEmployeeId(Long employeeId);
 
 }

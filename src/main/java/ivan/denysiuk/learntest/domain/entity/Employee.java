@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Data
@@ -30,4 +31,22 @@ public class Employee {
     @OneToMany(mappedBy = "employee",fetch = FetchType.EAGER)
     Set<Shift> workedShift = new HashSet<>();
 
+    @Override
+    public String toString() {
+        Set<Long> listOfShiftIds = workedShift.stream()
+                .map(Shift::getId)
+                .collect(Collectors.toSet());
+        return "Employee{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", rate=" + rate +
+                ", typeOfContract=" + typeOfContract +
+                ", specialization='" + specialization + '\'' +
+                ", dateOfBirthday=" + dateOfBirthday +
+                ", PESEL='" + PESEL + '\'' +
+                ", ZUSindex='" + ZUSindex + '\'' +
+                ", workedShift=" + listOfShiftIds +
+                '}';
+    }
 }

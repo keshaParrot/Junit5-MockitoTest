@@ -3,7 +3,6 @@ package ivan.denysiuk.learntest.Services;
 import ivan.denysiuk.learntest.Repository.EmployeeRepository;
 import ivan.denysiuk.learntest.Services.interfaces.EmployeeService;
 import ivan.denysiuk.learntest.domain.entity.Employee;
-import ivan.denysiuk.learntest.domain.entity.Shift;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -106,7 +105,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      */
     @Override
     public int countAllEmployees() {
-        return (int) employeeRepository.count();
+        return Integer.parseInt(String.valueOf(employeeRepository.count()));
     }
 
     /**
@@ -176,7 +175,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      * Calculate percent of the total
      *
      * @param total from which we want to calculate percent
-     * @param percent
+     * @param percent of sum which we want to get
      * @return percent of the total
      */
     private double getPercentage(double total, double percent) {

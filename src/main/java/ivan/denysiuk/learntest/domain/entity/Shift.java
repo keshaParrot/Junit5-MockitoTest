@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
@@ -24,7 +24,7 @@ public class Shift implements Comparable<Shift>{
     private Long id;
     private String station;
 
-    private LocalDateTime date;
+    private LocalDate date;
     private String startTime;
     private String endTime;
     private String actualStartTime;
@@ -56,5 +56,19 @@ public class Shift implements Comparable<Shift>{
     @Override
     public int compareTo(Shift o) {
         return 0;
+    }
+
+    @Override
+    public String toString() {
+        return "Shift{" +
+                "id=" + id +
+                ", station='" + station + '\'' +
+                ", date=" + date +
+                ", startTime='" + startTime + '\'' +
+                ", endTime='" + endTime + '\'' +
+                ", actualStartTime='" + actualStartTime + '\'' +
+                ", actualEndTime='" + actualEndTime + '\'' +
+                ", employee=" + employee +
+                '}';
     }
 }

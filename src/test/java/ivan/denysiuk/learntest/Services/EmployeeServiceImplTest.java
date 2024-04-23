@@ -1,7 +1,6 @@
 package ivan.denysiuk.learntest.Services;
 
 import ivan.denysiuk.learntest.Repository.EmployeeRepository;
-import ivan.denysiuk.learntest.Repository.ShiftRepository;
 import ivan.denysiuk.learntest.domain.entity.Employee;
 import ivan.denysiuk.learntest.domain.entity.Shift;
 import org.junit.jupiter.api.Assertions;
@@ -13,7 +12,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,7 +31,7 @@ class EmployeeServiceImplTest {
     @BeforeEach
     void setUp() {
         Shift shift = Shift.builder()
-                .date(LocalDateTime.of(2024, 4, 20, 0, 0))
+                .date(LocalDate.of(2024, 4, 20))
                 .actualStartTime("12:30")
                 .actualEndTime("22:30")
                 .build();
@@ -100,7 +99,7 @@ class EmployeeServiceImplTest {
     @Test
     void deleteEmployeeFromDatabase_whenEmployeeExistOnDB_notNull() {
         long employeeIdToDelete = 1;
-        when(employeeRepository.existsById(employeeIdToDelete)).thenReturn(true); // Працівник існує у базі
+        when(employeeRepository.existsById(employeeIdToDelete)).thenReturn(true);
 
         employeeService.deleteEmployeeFromDatabase(employeeIdToDelete);
 
