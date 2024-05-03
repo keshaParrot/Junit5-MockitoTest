@@ -55,7 +55,7 @@ class ShiftServiceImplTest {
     }
 
     @Test
-    void getShiftById_whenShiftExistOnDB_shift() {
+    void getShiftById() {
         when(shiftRepository.getShiftById(shiftId)).thenReturn(shift);
 
         Shift expectedShift = shiftService.getShiftById(shiftId);
@@ -81,8 +81,7 @@ class ShiftServiceImplTest {
 
     }
     @Test
-    @Disabled
-    void getAllShiftByEmployeeFromToDate_whenShiftExistOnDB_shift() {
+    void getAllShiftByEmployeeFromToDate() {
         when(employeeRepository.existsById(1L)).thenReturn(true);
         when(shiftRepository.getShiftsByEmployeeId(1L)).thenReturn(Arrays.asList(
                 Shift.builder()
@@ -97,14 +96,14 @@ class ShiftServiceImplTest {
     }
 
     @Test
-    void addShiftToDatabase_whenShiftNotNull_shift() {
+    void addShift() {
         shiftService.saveShift(shift);
 
         verify(shiftRepository, times(1)).save(shift);
     }
 
     @Test
-    void deleteShiftFromDatabase_whenShiftExistOnDB_true() {
+    void deleteShift() {
         when(shiftRepository.existsById(1L)).thenReturn(true);
 
         shiftService.deleteShift(1L);
@@ -113,14 +112,14 @@ class ShiftServiceImplTest {
     }
 
     @Test
-    void patchShift_changeAllProperty_0() {
+    void patchShift() {
         ShiftDto newShift = ShiftDto.builder()
                 .station("engineer")
                 .date(LocalDate.of(2022,2,2))
                 .startTime("14:40")
                 .endTime("19:50")
                 .employee(
-                        Employee.builder()
+                        EmployeeDto.builder()
                         .firstName("Iga")
                         .build()
                 )
@@ -136,6 +135,16 @@ class ShiftServiceImplTest {
         assertEquals("Iga", updatedShift.getEmployee().getFirstName());
         assertEquals("12:30",updatedShift.getActualStartTime());
     }
+
+    @Test
+    void updateShift() {
+        ShiftDto shiftDto = getShiftDto(shift);
+
+        shiftService.updateShift(1L,shiftDto);
+
+        verify(shiftRepository, times(1)).save(shift);
+    }
+
     @Test
     void countAllShift() {
         long expectedCount = 5;

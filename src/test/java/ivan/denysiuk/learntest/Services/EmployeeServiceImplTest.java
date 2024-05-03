@@ -106,15 +106,12 @@ class EmployeeServiceImplTest {
 
     @Test
     void addEmployeeToDatabase_whenEmployeeNotNull_notNull() {
-        // Arrange
         Employee convertedEmployee = employee1;
         when(employeeMapper.DtoToEmployee(employee2)).thenReturn(convertedEmployee);
         when(employeeRepository.save(convertedEmployee)).thenReturn(employee1);
 
-        // Act
         Employee result = employeeService.saveEmployee(employee2);
 
-        // Assert
         assertEquals(employee1, result);
         verify(employeeRepository).save(convertedEmployee);
         verify(employeeMapper).DtoToEmployee(employee2);
