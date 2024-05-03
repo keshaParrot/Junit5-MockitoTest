@@ -27,6 +27,9 @@ public class ShiftController {
     public ResponseEntity addShiftToDatabase(){
 
     }
+    public ResponseEntity addShiftsToDatabase(){
+
+    }
     public ResponseEntity deleteShiftFromDatabase(){
 
     }

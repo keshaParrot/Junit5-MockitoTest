@@ -3,15 +3,15 @@ package ivan.denysiuk.learntest.Services;
 import ivan.denysiuk.learntest.Repository.EmployeeRepository;
 import ivan.denysiuk.learntest.Repository.ShiftRepository;
 import ivan.denysiuk.learntest.Services.interfaces.ShiftService;
-import ivan.denysiuk.learntest.domain.entity.Employee;
+import ivan.denysiuk.learntest.domain.dto.ShiftDto;
 import ivan.denysiuk.learntest.domain.entity.Shift;
+import ivan.denysiuk.learntest.domain.mapper.ShiftMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -74,7 +74,7 @@ public class ShiftServiceImpl implements ShiftService {
      * @return
      */
     @Override
-    public Shift addShiftToDatabase(Shift shift) {
+    public Shift saveShift(Shift shift) {
         return shiftRepository.save(shift);
     }
     /**
@@ -82,7 +82,7 @@ public class ShiftServiceImpl implements ShiftService {
      * @return
      */
     @Override
-    public boolean deleteShiftFromDatabase(Long shiftId) {
+    public boolean deleteShift(Long shiftId) {
         if(shiftRepository.existsById(shiftId)){
             shiftRepository.deleteById(shiftId);
             return true;
@@ -92,90 +92,41 @@ public class ShiftServiceImpl implements ShiftService {
 
     /**
      * @param shiftId
-     * @param employeeId
-     * @return 0 means ok
-     *         1 means not ok, shift not exist
-     *         2 means not ok, employee is null
+     * @param updatedShift
+     * @return
      */
     @Override
-    public int changeEmployee(Long shiftId, Long employeeId) {
-        Employee employee = employeeRepository.getEmployeeById(employeeId);
+    public Shift patchShift(Long shiftId, ShiftDto updatedShift){
         Shift shift = shiftRepository.getShiftById(shiftId);
 
-        if(shift==null) return 1;
-        if(employee == null) return 2;
-
-        shift.setEmployee(employee);
-        shiftRepository.save(shift);
-        return 0;
-    }
-
-    /**
-     * Change start time, and end time in the desired work shift
-     *
-     * @param shiftId id of the desired shift
-     * @param startTime of the shift time for which you need to leave
-     * @param endTime of the shift time for which you need to leave
-     * @return 0 means time changed successfully
-     *         1 mean failed, shift not exist
-     *         2 means failed, time is not valid
-     */
-    @Override
-    public int changeWorkedTime(Long shiftId, String startTime, String endTime) {
-        Shift shift = shiftRepository.getShiftById(shiftId);
-
-        if(shift==null) return 1;
-        if(!isTimeValid(startTime) || !isTimeValid(endTime)) return 2;
-
-        shift.setStartTime(startTime);
-        shift.setEndTime(endTime);
-        shiftRepository.save(shift);
-
-        return 0;
-    }
-    /**
-     * Check is provided time valid
-     *
-     * @param Time provided Time which need to check
-     * @return true if time valid
-     *         false if time mot valid
-     */
-    @Override
-    public boolean isTimeValid(String Time){
-        try {
-            LocalTime localTime = LocalTime.parse(Time, DateTimeFormatter.ofPattern("HH:mm"));
-
-            return true;
-        } catch (Exception e) {
-            return false;
+        if(StringUtils.hasText(updatedShift.getStation())){
+            shift.setStation(updatedShift.getStation());
         }
-
+        if(updatedShift.getDate() != null){
+            shift.setDate(updatedShift.getDate());
+        }
+        if(StringUtils.hasText(updatedShift.getStartTime())){
+            shift.setStartTime(updatedShift.getStartTime());
+        }
+        if(StringUtils.hasText(updatedShift.getEndTime())){
+            shift.setEndTime(updatedShift.getEndTime());
+        }
+        if(StringUtils.hasText(updatedShift.getActualStartTime())){
+            shift.setActualStartTime(updatedShift.getActualStartTime());
+        }
+        if(StringUtils.hasText(updatedShift.getActualEndTime())){
+            shift.setActualEndTime(updatedShift.getActualEndTime());
+        }
+        if(updatedShift.getEmployee() != null){
+            shift.setEmployee(getShiftFromDto(updatedShift).getEmployee());
+        }
+        return shiftRepository.save(shift);
     }
-
-    /**
-     * Change Actual start time, and end time in the desired work shift
-     *
-     * @param shiftId id of the desired shift
-     * @param startTime of the shift time for which you need to leave
-     * @param endTime of the shift time for which you need to leave
-     * @return 0 means time changed successfully
-     *         1 mean failed, shift not exist
-     *         2 means failed, time is not valid
-     */
     @Override
-    public int changeActualWorkTime(Long shiftId,String startTime, String endTime) {
-        Shift shift = shiftRepository.getShiftById(shiftId);
-
-        if(shift==null) return 1;
-        if(!isTimeValid(startTime) || !isTimeValid(endTime)) return 2;
-
-        shift.setActualStartTime(startTime);
-        shift.setActualEndTime(endTime);
-        shiftRepository.save(shift);
-
-        return 0;
+    public Shift updateShift(Long shiftId, ShiftDto updatedShift){
+        updatedShift.setId(shiftId);
+        return shiftRepository.save(getShiftFromDto(updatedShift));
     }
-
     /**
      * count all Shift on database
      *
@@ -184,5 +135,8 @@ public class ShiftServiceImpl implements ShiftService {
     @Override
     public int countAllShift() {
         return Integer.parseInt(String.valueOf(shiftRepository.count()));
+    }
+    private Shift getShiftFromDto(ShiftDto shift){
+        return ShiftMapper.INSTANCE.DtoToShift(shift);
     }
 }

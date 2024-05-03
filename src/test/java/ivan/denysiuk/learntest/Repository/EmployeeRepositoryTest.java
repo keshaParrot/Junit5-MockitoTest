@@ -1,7 +1,6 @@
 package ivan.denysiuk.learntest.Repository;
 
 import ivan.denysiuk.learntest.domain.entity.Employee;
-import ivan.denysiuk.learntest.domain.entity.Shift;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

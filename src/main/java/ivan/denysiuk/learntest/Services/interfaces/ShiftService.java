@@ -1,5 +1,6 @@
 package ivan.denysiuk.learntest.Services.interfaces;
 
+import ivan.denysiuk.learntest.domain.dto.ShiftDto;
 import ivan.denysiuk.learntest.domain.entity.Shift;
 import org.springframework.stereotype.Service;
 
@@ -13,14 +14,12 @@ public interface ShiftService {
     Shift getShiftById(Long shiftId);
     List<Shift> getAllShiftByEmployee(Long employeeId);
     List<Shift> getAllShiftByEmployeeFromToDate(Long employeeId, YearMonth From, YearMonth to);
-    Shift addShiftToDatabase(Shift shift);
-    boolean deleteShiftFromDatabase(Long shiftId);
-    int changeEmployee(Long shiftId,Long employeeId);
-    int changeWorkedTime(Long shiftId, String startTime,String endTime);
+    Shift saveShift(Shift shift);
+    boolean deleteShift(Long shiftId);
+    Shift patchShift(Long shiftId, ShiftDto updatedShift);
 
-    boolean isTimeValid(String Time);
+    Shift updateShift(Long shiftId, ShiftDto updatedShift);
 
-    int changeActualWorkTime(Long shiftId, String startTime, String endTime);
     int countAllShift();
 
 }

@@ -22,8 +22,8 @@ public class Shift implements Comparable<Shift>{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String station;
 
+    private String station;
     private LocalDate date;
     private String startTime;
     private String endTime;

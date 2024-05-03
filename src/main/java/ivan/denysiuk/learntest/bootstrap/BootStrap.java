@@ -37,12 +37,11 @@ public class BootStrap implements CommandLineRunner {
                 .build();
 
         shiftRepository.save(shift);
+        System.out.println(employeeService.getAllEmployees());
+        //employeeService.patchEmployee(1L,Employee.builder()
+          //      .PESEL("9999999999")
+            //    .build());
+        System.out.println(employeeService.getAllEmployees());
 
-
-        System.out.println(shiftService.getAllShiftByEmployee(3L));
-        System.out.println(employeeService.getMonthTax(employee.getId(),5));
-        System.out.println(shiftService.changeActualWorkTime(1L,"13:20","19:20"));
-        System.out.println(shiftService.getAllShiftByEmployee(1L));
-        System.out.println(shiftService.changeWorkedTime(1L,"13:20","19:20"));
     }
 }

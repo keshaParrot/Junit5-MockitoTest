@@ -1,8 +1,10 @@
 package ivan.denysiuk.learntest.Services;
 
 import ivan.denysiuk.learntest.Repository.EmployeeRepository;
+import ivan.denysiuk.learntest.domain.dto.EmployeeDto;
 import ivan.denysiuk.learntest.domain.entity.Employee;
 import ivan.denysiuk.learntest.domain.entity.Shift;
+import ivan.denysiuk.learntest.domain.mapper.EmployeeMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -25,11 +29,26 @@ class EmployeeServiceImplTest {
     EmployeeServiceImpl employeeService;
     @Mock
     EmployeeRepository employeeRepository;
-
+    @Mock
+    EmployeeMapper employeeMapper;
     Employee employee1;
-    Employee employee2;
+    EmployeeDto employee2;
     @BeforeEach
     void setUp() {
+        Stream<Shift> randomShifts = Stream.generate(() -> {
+            String startTime = randomTime();
+            String endTime = randomTime();
+            return Shift.builder()
+                    .station("Station " + (new Random().nextInt(10) + 1))
+                    .date(LocalDate.of(2024,5,5))
+                    .startTime(startTime)
+                    .endTime(endTime)
+                    .actualStartTime(startTime)
+                    .actualEndTime(endTime)
+                    .employee(null)
+                    .build();
+        }).limit(5);
+
         Shift shift = Shift.builder()
                 .date(LocalDate.of(2024, 4, 20))
                 .actualStartTime("12:30")
@@ -41,19 +60,25 @@ class EmployeeServiceImplTest {
                 .lastName("Kowalski")
                 .PESEL("03947283728")
                 .rate(23.5)
-                .workedShift(Collections.singleton(shift))
+                .workedShift(randomShifts.collect(Collectors.toUnmodifiableSet()))
                 .build();
 
-        employee2 = Employee.builder()
+        employee2 = EmployeeDto.builder()
                 .firstName("Iga")
                 .lastName("Nowak")
                 .rate(23.5)
                 .build();
     }
 
+    String randomTime() {
+        int hour = new Random().nextInt(24);
+        int minute = new Random().nextInt(60);
+        return String.format("%02d:%02d", hour, minute);
+    }
+
     @Test
     void getAllEmployees_whenEmployeesExistOnDB_notNull() {
-        List<Employee> savedEmployee = List.of(employee1, employee2);
+        List<Employee> savedEmployee = List.of(employee1);
 
         Mockito.when(employeeRepository.findAll()).thenReturn(savedEmployee);
 
@@ -81,19 +106,38 @@ class EmployeeServiceImplTest {
 
     @Test
     void addEmployeeToDatabase_whenEmployeeNotNull_notNull() {
-        employeeService.addEmployeeToDatabase(employee2);
+        // Arrange
+        Employee convertedEmployee = employee1;
+        when(employeeMapper.DtoToEmployee(employee2)).thenReturn(convertedEmployee);
+        when(employeeRepository.save(convertedEmployee)).thenReturn(employee1);
 
-        verify(employeeRepository, times(1)).save(employee2);
+        // Act
+        Employee result = employeeService.saveEmployee(employee2);
+
+        // Assert
+        assertEquals(employee1, result);
+        verify(employeeRepository).save(convertedEmployee);
+        verify(employeeMapper).DtoToEmployee(employee2);
     }
 
     @Test
     void updateEmployeeOnDatabase_whenEmployeeNotNull_notNull() {
-        Employee employeeToUpdate = employee2;
+        EmployeeDto employeeToUpdate = employee2;
         employeeToUpdate.setPESEL("94637289402");
+        when(employeeRepository.getEmployeeById(anyLong())).thenReturn(employee1);
 
-        employeeService.updateEmployeeOnDatabase(employeeToUpdate);
+        employeeService.updateEmployee(anyLong(),employeeToUpdate);
 
-        verify(employeeRepository, times(1)).save(employeeToUpdate);
+        verify(employeeRepository, times(1)).save(employee1);
+    }
+    @Test
+    void patchEmployee(){
+        EmployeeDto employeeToUpdate = employee2;
+        when(employeeRepository.getEmployeeById(anyLong())).thenReturn(employee1);
+
+        employeeService.patchEmployee(anyLong(),employeeToUpdate);
+
+        verify(employeeRepository, times(1)).save(employee1);
     }
 
     @Test
@@ -101,7 +145,7 @@ class EmployeeServiceImplTest {
         long employeeIdToDelete = 1;
         when(employeeRepository.existsById(employeeIdToDelete)).thenReturn(true);
 
-        employeeService.deleteEmployeeFromDatabase(employeeIdToDelete);
+        employeeService.deleteEmployee(employeeIdToDelete);
 
         verify(employeeRepository, times(1)).deleteById(employeeIdToDelete);
     }

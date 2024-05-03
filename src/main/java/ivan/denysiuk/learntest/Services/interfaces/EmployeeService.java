@@ -1,5 +1,6 @@
 package ivan.denysiuk.learntest.Services.interfaces;
 
+import ivan.denysiuk.learntest.domain.dto.EmployeeDto;
 import ivan.denysiuk.learntest.domain.entity.Employee;
 import org.springframework.stereotype.Service;
 
@@ -13,9 +14,10 @@ public interface EmployeeService {
     Employee getEmployeeById(Long id);
     Employee getEmployeeByPESEL(String pesel);
     Employee getEmployeeByfullName(String fullName);
-    Employee addEmployeeToDatabase(Employee employee);
-    Employee updateEmployeeOnDatabase(Employee employee);
-    boolean deleteEmployeeFromDatabase(Long id);
+    Employee saveEmployee(EmployeeDto employee);
+    Employee updateEmployee(Long employeeId, EmployeeDto updatedEmployee);
+    Employee patchEmployee(Long employeeId, EmployeeDto updatedEmployee);
+    boolean deleteEmployee(Long id);
     int countAllEmployees();
     double getMonthSalary(Long id, int month);
     Map<String, Double> getMonthTax(Long id, int month);

@@ -2,9 +2,12 @@ package ivan.denysiuk.learntest.Services;
 
 import ivan.denysiuk.learntest.Repository.EmployeeRepository;
 import ivan.denysiuk.learntest.Services.interfaces.EmployeeService;
+import ivan.denysiuk.learntest.domain.dto.EmployeeDto;
 import ivan.denysiuk.learntest.domain.entity.Employee;
+import ivan.denysiuk.learntest.domain.mapper.EmployeeMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -67,19 +70,61 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @return instance of saved employee
      */
     @Override
-    public Employee addEmployeeToDatabase(Employee employee) {
-        return employeeRepository.save(employee);
+    public Employee saveEmployee(EmployeeDto employee) {
+        return employeeRepository.save(getEmployeeFromDto(employee));
     }
 
     /**
      * Update employee on database
      *
-     * @param employee which we need to update
+     * @param employeeId
+     * @param updatedEmployee which we need to update
      * @return instance of updated employee
      */
     @Override
-    public Employee updateEmployeeOnDatabase(Employee employee) {
-        return employeeRepository.save(employee);
+    public Employee updateEmployee(Long employeeId, EmployeeDto updatedEmployee) {
+        //Employee existEmployee = employeeRepository.getEmployeeById(employeeId);
+        return employeeRepository.save(getEmployeeFromDto(updatedEmployee));
+    }
+    /**
+     * Update only needs params of employee on database
+     *
+     * @param employeeId which we need to update
+     * @param updatedEmployee which we need to update
+     * @return instance of updated employee
+     */
+    @Override
+    public Employee patchEmployee(Long employeeId, EmployeeDto updatedEmployee){
+        Employee existEmployee = employeeRepository.getEmployeeById(employeeId);
+        if (StringUtils.hasText(updatedEmployee.getFirstName())){
+            existEmployee.setFirstName(updatedEmployee.getFirstName());
+        }
+
+        if (StringUtils.hasText(updatedEmployee.getLastName())) {
+            existEmployee.setLastName(updatedEmployee.getLastName());
+        }
+
+        if (StringUtils.hasText(updatedEmployee.getPESEL())) {
+            existEmployee.setPESEL(updatedEmployee.getPESEL());
+        }
+
+        if (StringUtils.hasText(updatedEmployee.getSpecialization())){
+            existEmployee.setSpecialization(updatedEmployee.getSpecialization());
+        }
+
+        if (StringUtils.hasText(updatedEmployee.getZUSindex())){
+            existEmployee.setZUSindex(updatedEmployee.getZUSindex());
+        }
+
+        if (updatedEmployee.getDateOfBirthday()!=null){
+            existEmployee.setDateOfBirthday(updatedEmployee.getDateOfBirthday());
+        }
+
+        if (updatedEmployee.getTypeOfContract()!=null){
+            existEmployee.setTypeOfContract(updatedEmployee.getTypeOfContract());
+        }
+
+        return employeeRepository.save(existEmployee);
     }
 
     /**
@@ -90,7 +135,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      *         FALSE if employee with id not exist od DB, and delete failed
      */
     @Override
-    public boolean deleteEmployeeFromDatabase(Long id) {
+    public boolean deleteEmployee(Long id) {
         if (employeeRepository.existsById(id)){
             employeeRepository.deleteById(id);
             return true;
@@ -197,5 +242,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         double totalTax = mapOfTax.values().stream().mapToDouble(Double::doubleValue).sum();
 
         return employeeSalary - totalTax;
+    }
+    public Employee getEmployeeFromDto(EmployeeDto employeeDto){
+        return EmployeeMapper.INSTANCE.DtoToEmployee(employeeDto);
     }
 }
