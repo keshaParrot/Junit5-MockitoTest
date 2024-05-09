@@ -33,7 +33,6 @@ public class ShiftDto {
     private String endTime;
     private String actualStartTime;
     private String actualEndTime;
-    @NotNull(message = "Employee cannot be empty")
-    @ManyToOne
-    EmployeeDto employee;
+    @NotNull(message = "Employee id cannot be empty")
+    Long employeeId; //TODO we need to change here Employee class on Long
 }

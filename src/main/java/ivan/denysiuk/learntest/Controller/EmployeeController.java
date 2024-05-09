@@ -1,6 +1,5 @@
 package ivan.denysiuk.learntest.Controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import ivan.denysiuk.learntest.Services.interfaces.EmployeeService;
 import ivan.denysiuk.learntest.domain.dto.EmployeeDto;
 import ivan.denysiuk.learntest.domain.dto.SalaryDto;
@@ -12,10 +11,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,44 +21,30 @@ import java.util.Map;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/employee")
 public class EmployeeController {
+    public static final String EMPLOYEE_PATH = "/api/v1/employee";
+    public static final String EMPLOYEE_PATH_ID = EMPLOYEE_PATH + "/{id}";
     private final EmployeeService employeeService;
-    private final ObjectMapper objectMapper;
-
-    /**
-     * Send ResponseEntity if not empty with code 200 (ok)
-     *
-     * @return ResponseEntity with code 200 if employees exist
-     *         ResponseEntity with code 404 if employees not exist
-     */
-    @GetMapping
-    public ResponseEntity<List<Employee>> getAllEmployees(){
-        List<Employee> employees = employeeService.getAllEmployees();
-        if (!employees.isEmpty()) {
-            return ResponseEntity.ok(employees);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
 
     /**
      *
      * @param id
      * @return
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable("id")Long id){
+    @GetMapping(EMPLOYEE_PATH_ID)
+    public ResponseEntity<EmployeeDto> getEmployeeById(@PathVariable("id")Long id){
         Employee employee = employeeService.getEmployeeById(id);
         if (employee != null) {
-            return ResponseEntity.ok(employee);
+            return ResponseEntity.ok(getDtoFromEmployee(employee));
         } else {
             return ResponseEntity.notFound().build();
         }
     }
-    @GetMapping("{id}/salary")
-    public ResponseEntity<?> getEmployeeSalary(@PathVariable Long id,
+    @GetMapping(EMPLOYEE_PATH_ID+"/salary")
+    public ResponseEntity<SalaryDto> getEmployeeSalary(@PathVariable Long id,
                                                @RequestParam(name = "month") Integer month) {
+
+        System.out.println(id +" "+ month);
         Employee employee = employeeService.getEmployeeById(id);
         if (employee == null) {
             return ResponseEntity.notFound().build();
@@ -84,11 +67,11 @@ public class EmployeeController {
      * @param pesel
      * @return
      */
-    @GetMapping("/searchbypesel/{PESEL}")
-    public ResponseEntity<Employee> getEmployeeByPESEL(@PathVariable("PESEL") String pesel){
+    @GetMapping(EMPLOYEE_PATH+"/searchbypesel/{PESEL}")
+    public ResponseEntity<EmployeeDto> getEmployeeByPESEL(@PathVariable("PESEL") String pesel){
         Employee employee = employeeService.getEmployeeByPESEL(pesel);
         if (employee != null) {
-            return ResponseEntity.ok(employee);
+            return ResponseEntity.ok(getDtoFromEmployee(employee));
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -99,11 +82,11 @@ public class EmployeeController {
      * @param fullName
      * @return
      */
-    @GetMapping("/searchbyfullname/{fullName}")
-    public ResponseEntity<Employee> getEmployeeByFullName(@PathVariable("fullName") String fullName){
+    @GetMapping(EMPLOYEE_PATH+"/searchbyfullname/{fullName}")
+    public ResponseEntity<EmployeeDto> getEmployeeByFullName(@PathVariable("fullName") String fullName){
         Employee employee = employeeService.getEmployeeByfullName(fullName);
         if (employee != null) {
-            return ResponseEntity.ok(employee);
+            return ResponseEntity.ok(getDtoFromEmployee(employee));
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -114,7 +97,7 @@ public class EmployeeController {
      * @param id
      * @return
      */
-    @DeleteMapping("/{id}/delete")
+    @DeleteMapping(EMPLOYEE_PATH_ID+"/delete")
     public ResponseEntity deleteEmployee(@PathVariable("id")Long id){
         boolean deleted = employeeService.deleteEmployee(id);
         if(deleted) {
@@ -130,18 +113,18 @@ public class EmployeeController {
      * @param bindingResult
      * @return
      */
-    @PostMapping("/create")
-    public ResponseEntity<Employee> saveEmployee(@Valid @RequestBody EmployeeDto employee,
+    @PostMapping(EMPLOYEE_PATH+"/create")
+    public ResponseEntity<EmployeeDto> saveEmployee(@Valid @RequestBody EmployeeDto employee,
                                                  BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             HttpHeaders headers = new HttpHeaders();
             headers.add("Errors", bindingResult.getAllErrors().stream().map(objectError -> objectError.getDefaultMessage() + "\n").toList().toString());
 
-            return ResponseEntity.badRequest().headers(headers).body(getEmployeeFromDto(employee));
+            return ResponseEntity.badRequest().headers(headers).body(employee);
         }
 
         Employee savedEmployee = employeeService.saveEmployee(employee);
-        return new ResponseEntity<>(savedEmployee, HttpStatus.CREATED);
+        return new ResponseEntity<>(getDtoFromEmployee(savedEmployee), HttpStatus.CREATED);
     }
 
     /**
@@ -151,12 +134,11 @@ public class EmployeeController {
      * @param bindingResult
      * @return
      */
-    @PutMapping("/{id}/update")
-    public ResponseEntity<Employee> updateEmployee(@PathVariable("id") Long employeeId,
+    @PutMapping(EMPLOYEE_PATH_ID+"/update")
+    public ResponseEntity<EmployeeDto> updateEmployee(@PathVariable("id") Long employeeId,
                                                    @Valid @RequestBody EmployeeDto employee,
                                                    BindingResult bindingResult){
 
-        employee.setId(employeeId);
         Employee updatedEmployee = employeeService.updateEmployee(employeeId,employee);
 
 
@@ -164,10 +146,10 @@ public class EmployeeController {
             HttpHeaders headers = new HttpHeaders();
             headers.add("Errors", bindingResult.getAllErrors().stream().map(objectError -> objectError.getDefaultMessage() + "\n").toList().toString());
 
-            return ResponseEntity.badRequest().headers(headers).body(getEmployeeFromDto(employee));
+            return ResponseEntity.badRequest().headers(headers).body(employee);
         }
         if(updatedEmployee != null) {
-            return new ResponseEntity<>(updatedEmployee, HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(getDtoFromEmployee(updatedEmployee), HttpStatus.ACCEPTED);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -179,13 +161,13 @@ public class EmployeeController {
      * @param employee
      * @return
      */
-    @PatchMapping("/{id}/update")
-    public ResponseEntity<Employee> updatePatchEmployee(@PathVariable("id") Long employeeId,
+    @PatchMapping(EMPLOYEE_PATH_ID+ "/update")
+    public ResponseEntity<EmployeeDto> PatchEmployee(@PathVariable("id") Long employeeId,
                                                          @RequestBody EmployeeDto employee){
 
         Employee updatedEmployee = employeeService.patchEmployee(employeeId,employee);
         if(updatedEmployee != null) {
-            return new ResponseEntity<>(updatedEmployee, HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(getDtoFromEmployee(updatedEmployee), HttpStatus.ACCEPTED);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -197,6 +179,9 @@ public class EmployeeController {
      * @return
      */
     private Employee getEmployeeFromDto(EmployeeDto employeeDto){
-        return EmployeeMapper.INSTANCE.DtoToEmployee(employeeDto);
+        return EmployeeMapper.INSTANCE.dtoToEmployee(employeeDto);
+    }
+    private EmployeeDto getDtoFromEmployee(Employee employee){
+        return EmployeeMapper.INSTANCE.employeeToDto(employee);
     }
 }

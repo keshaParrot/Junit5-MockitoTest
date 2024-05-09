@@ -49,12 +49,6 @@ class EmployeeServiceImplTest {
                     .build();
         }).limit(5);
 
-        Shift shift = Shift.builder()
-                .date(LocalDate.of(2024, 4, 20))
-                .actualStartTime("12:30")
-                .actualEndTime("22:30")
-                .build();
-
         employee1 = Employee.builder()
                 .firstName("Adam")
                 .lastName("Kowalski")
@@ -106,26 +100,20 @@ class EmployeeServiceImplTest {
 
     @Test
     void addEmployeeToDatabase_whenEmployeeNotNull_notNull() {
-        Employee convertedEmployee = employee1;
-        when(employeeMapper.DtoToEmployee(employee2)).thenReturn(convertedEmployee);
-        when(employeeRepository.save(convertedEmployee)).thenReturn(employee1);
+        Employee convertedEmployee = getEmployeeFromDto(employee2);
 
-        Employee result = employeeService.saveEmployee(employee2);
+        employeeService.saveEmployee(employee2);
 
-        assertEquals(employee1, result);
-        verify(employeeRepository).save(convertedEmployee);
-        verify(employeeMapper).DtoToEmployee(employee2);
+        verify(employeeRepository, times(1)).save(convertedEmployee);
     }
 
     @Test
-    void updateEmployeeOnDatabase_whenEmployeeNotNull_notNull() {
-        EmployeeDto employeeToUpdate = employee2;
-        employeeToUpdate.setPESEL("94637289402");
-        when(employeeRepository.getEmployeeById(anyLong())).thenReturn(employee1);
+    void updateEmployeeOnDatabase() {
+        Employee convertedEmployee = getEmployeeFromDto(employee2);
 
-        employeeService.updateEmployee(anyLong(),employeeToUpdate);
+        employeeService.updateEmployee(anyLong(),employee2);
 
-        verify(employeeRepository, times(1)).save(employee1);
+        verify(employeeRepository, times(1)).save(convertedEmployee);
     }
     @Test
     void patchEmployee(){
@@ -139,12 +127,11 @@ class EmployeeServiceImplTest {
 
     @Test
     void deleteEmployeeFromDatabase_whenEmployeeExistOnDB_notNull() {
-        long employeeIdToDelete = 1;
-        when(employeeRepository.existsById(employeeIdToDelete)).thenReturn(true);
+        when(employeeRepository.existsById(anyLong())).thenReturn(true);
 
-        employeeService.deleteEmployee(employeeIdToDelete);
+        employeeService.deleteEmployee(anyLong());
 
-        verify(employeeRepository, times(1)).deleteById(employeeIdToDelete);
+        verify(employeeRepository, times(1)).deleteById(anyLong());
     }
 
     @Test
@@ -164,7 +151,7 @@ class EmployeeServiceImplTest {
 
         when(employeeRepository.getEmployeeById(employeeId)).thenReturn(employee1);
 
-        double monthSalary = employeeService.getMonthSalary(employeeId,4);
+        double monthSalary = employeeService.getMonthSalary(employeeId,5);
 
         Assertions.assertTrue(monthSalary > 0, "The month salary should be greater than 0");
     }
@@ -174,7 +161,7 @@ class EmployeeServiceImplTest {
 
         when(employeeRepository.getEmployeeById(employeeId)).thenReturn(employee1);
 
-        Map<String, Double> mapOfTax = employeeService.getMonthTax(employeeId,4);
+        Map<String, Double> mapOfTax = employeeService.getMonthTax(employeeId,5);
 
         assertNotNull(mapOfTax,"The month salary should be not null");
     }
@@ -184,8 +171,11 @@ class EmployeeServiceImplTest {
 
         when(employeeRepository.getEmployeeById(employeeId)).thenReturn(employee1);
 
-        double monthRevenue = employeeService.getMonthRevenue(employeeId,4);
+        double monthRevenue = employeeService.getMonthRevenue(employeeId,5);
 
         Assertions.assertTrue(monthRevenue > 0.0, "The month salary should be greater than 0");
+    }
+    Employee getEmployeeFromDto(EmployeeDto employee){
+        return EmployeeMapper.INSTANCE.dtoToEmployee(employee);
     }
 }

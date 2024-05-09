@@ -22,6 +22,7 @@ import java.util.Map;
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+
     /**
      * Find all employee on database
      *
@@ -83,7 +84,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      */
     @Override
     public Employee updateEmployee(Long employeeId, EmployeeDto updatedEmployee) {
-        //Employee existEmployee = employeeRepository.getEmployeeById(employeeId);
+        updatedEmployee.setId(employeeId);
         return employeeRepository.save(getEmployeeFromDto(updatedEmployee));
     }
     /**
@@ -172,7 +173,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         totalSalary = employee.getWorkedShift().stream()
                 .filter(shift -> {
                     int shiftMonth = shift.getDate().getMonth().getValue();
-                    System.out.println(shiftMonth);
                     return shiftMonth == month;
                 })
                 .mapToDouble(shift -> {
@@ -182,7 +182,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 })
                 .sum();
 
-        return totalSalary;
+        return Math.round(totalSalary * 100.0) / 100.0;
     }
 
     /**
@@ -237,13 +237,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public double getMonthRevenue(Long id, int month) {
         double employeeSalary = getMonthSalary(id, month);
-        Map<String,Double> mapOfTax = getMonthTax(id, month);
+        if(employeeSalary==0.0) return 0.0;
 
+        Map<String,Double> mapOfTax = getMonthTax(id, month);
         double totalTax = mapOfTax.values().stream().mapToDouble(Double::doubleValue).sum();
 
-        return employeeSalary - totalTax;
+        return Math.round(employeeSalary - totalTax * 100.0) / 100.0;
     }
     public Employee getEmployeeFromDto(EmployeeDto employeeDto){
-        return EmployeeMapper.INSTANCE.DtoToEmployee(employeeDto);
+        return EmployeeMapper.INSTANCE.dtoToEmployee(employeeDto);
     }
 }

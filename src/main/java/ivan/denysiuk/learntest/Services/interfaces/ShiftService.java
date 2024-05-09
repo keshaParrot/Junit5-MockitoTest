@@ -14,12 +14,10 @@ public interface ShiftService {
     Shift getShiftById(Long shiftId);
     List<Shift> getAllShiftByEmployee(Long employeeId);
     List<Shift> getAllShiftByEmployeeFromToDate(Long employeeId, YearMonth From, YearMonth to);
-    Shift saveShift(Shift shift);
+    Shift saveShift(ShiftDto shift);
     boolean deleteShift(Long shiftId);
     Shift patchShift(Long shiftId, ShiftDto updatedShift);
-
     Shift updateShift(Long shiftId, ShiftDto updatedShift);
-
     int countAllShift();
 
 }

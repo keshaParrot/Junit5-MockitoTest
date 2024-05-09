@@ -1,7 +1,11 @@
 package ivan.denysiuk.learntest.Controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ivan.denysiuk.learntest.Services.interfaces.EmployeeService;
 import ivan.denysiuk.learntest.Services.interfaces.ShiftService;
+import ivan.denysiuk.learntest.domain.dto.EmployeeDto;
+import ivan.denysiuk.learntest.domain.dto.ShiftDto;
 import ivan.denysiuk.learntest.domain.entity.Employee;
 import ivan.denysiuk.learntest.domain.entity.Shift;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,12 +18,19 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
 
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.hamcrest.core.Is.is;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -34,6 +45,8 @@ class ShiftControllerTest {
     MockMvc mockMvc;
     @MockBean
     ShiftService shiftService;
+    @Autowired
+    ObjectMapper objectMapper;
     Shift shift;
 
     @BeforeEach
@@ -48,7 +61,7 @@ class ShiftControllerTest {
                 .id(1L)
                 .startTime("22:30")
                 .endTime("6:00")
-                .date(LocalDate.now())
+                .date(LocalDate.of(2024,5,4))
                 .employee(employee)
                 .build();
     }
@@ -76,33 +89,58 @@ class ShiftControllerTest {
     }
 
     @Test
-    void getAllShiftByEmployeeFromToDate() {
+    void getAllShiftByEmployeeFromToDate() throws Exception {
+        Long employeeId = 1L;
+
+        mockMvc.perform(get("/api/v1/shift/searchbyemployee/"+ employeeId)
+                        .param("from", "3")
+                        .param("To", "5")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].employee.id",is(employeeId)))
+                .andExpect(jsonPath("$[0].startTime",is("22:30")));
+
     }
 
     @Test
-    void addShiftToDatabase() {
+    void addShiftToDatabase() throws Exception {
+        given(shiftService.saveShift(any(ShiftDto.class))).willReturn(shift);
 
-        //mockMvc.perform(post("/api/v1/shift/"))
-
+        mockMvc.perform(post("/api/v1/shift/create")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(shift)))
+                .andExpect(status().isCreated());
     }
 
     @Test
-    void deleteShiftFromDatabase() {
+    void deleteShiftFromDatabase() throws Exception {
+        when(shiftService.deleteShift(anyLong())).thenReturn(true);
+
+        mockMvc.perform(delete("/api/v1/shift/"+ shift.getId() +"/delete")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated());
+
+        verify(shiftService).deleteShift(any());
     }
 
     @Test
-    void changeEmployee() {
+    void patchShift() throws Exception {
+        mockMvc.perform(patch("/api/v1/employee/"+shift.getId()+"/update")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(shift)));
+
+        verify(shiftService).updateShift(anyLong(),any(ShiftDto.class));
     }
 
     @Test
-    void changeWorkedTime() {
-    }
+    void updateShift() throws Exception {
+        mockMvc.perform(put("/api/v1/employee/"+shift.getId()+"/update")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(shift)));
 
-    @Test
-    void changeActualWorkTime() {
-    }
-
-    @Test
-    void countAllShift() {
+        verify(shiftService).updateShift(anyLong(),any(ShiftDto.class));
     }
 }

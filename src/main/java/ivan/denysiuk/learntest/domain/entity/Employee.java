@@ -56,7 +56,6 @@ public class Employee {
                 ", ZUSindex='" + ZUSindex + '\'' +
                 ", workedShift=" + (workedShift != null ? workedShift.stream()
                 .map(Shift::toString)
-                .collect(Collectors.joining(", ")) : "No shifts") +
-                '}';
+                .collect(Collectors.joining(", ")) : "No shifts}");
     }
 }

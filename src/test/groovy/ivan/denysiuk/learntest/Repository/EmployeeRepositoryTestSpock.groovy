@@ -1,9 +1,11 @@
 package ivan.denysiuk.learntest.Repository
 
+import org.springframework.test.context.TestPropertySource
 import spock.lang.Specification
 
+@TestPropertySource(locations = "classpath:application-test.properties")
 class EmployeeRepositoryTestSpock extends Specification {
-    EmployeeRepository employeeRepository = Mock(EmployeeRepository.class)
+    def employeeRepository = spy(EmployeeRepository)
 
     def "GetEmployeeById"() {
 

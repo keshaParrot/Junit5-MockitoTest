@@ -70,11 +70,13 @@ public class ShiftServiceImpl implements ShiftService {
     }
 
     /**
-     * @param shift
+     * @param shiftDto
      * @return
      */
     @Override
-    public Shift saveShift(Shift shift) {
+    public Shift saveShift(ShiftDto shiftDto) {
+        Shift shift = getShiftFromDto(shiftDto);
+        shift.setEmployee(employeeRepository.getEmployeeById(shiftDto.getEmployeeId()));
         return shiftRepository.save(shift);
     }
     /**
@@ -117,15 +119,17 @@ public class ShiftServiceImpl implements ShiftService {
         if(StringUtils.hasText(updatedShift.getActualEndTime())){
             shift.setActualEndTime(updatedShift.getActualEndTime());
         }
-        if(updatedShift.getEmployee() != null){
-            shift.setEmployee(getShiftFromDto(updatedShift).getEmployee());
+        if(updatedShift.getEmployeeId() != null){
+            shift.setEmployee(employeeRepository.getEmployeeById(updatedShift.getEmployeeId()));
         }
         return shiftRepository.save(shift);
     }
     @Override
     public Shift updateShift(Long shiftId, ShiftDto updatedShift){
         updatedShift.setId(shiftId);
-        return shiftRepository.save(getShiftFromDto(updatedShift));
+        Shift shift = getShiftFromDto(updatedShift);
+        shift.setEmployee(employeeRepository.getEmployeeById(updatedShift.getEmployeeId()));
+        return shiftRepository.save(shift);
     }
     /**
      * count all Shift on database

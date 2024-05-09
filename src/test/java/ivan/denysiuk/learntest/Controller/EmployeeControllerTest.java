@@ -9,6 +9,8 @@ import ivan.denysiuk.learntest.domain.entity.TypeOfContract;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -18,12 +20,14 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
@@ -43,10 +47,17 @@ class EmployeeControllerTest {
     ObjectMapper objectMapper;
     @MockBean
     EmployeeService employeeService;
+    @Captor
+    ArgumentCaptor<Long> longArgumentCaptor;
+    @Captor
+    ArgumentCaptor<EmployeeDto> employeeDtoArgumentCaptor;
     Employee employee;
 
     @BeforeEach
     void setUp() {
+        longArgumentCaptor = ArgumentCaptor.forClass(Long.class);
+        employeeDtoArgumentCaptor = ArgumentCaptor.forClass(EmployeeDto.class);
+
         Stream<Shift> randomShifts = Stream.generate(() -> {
             String startTime = randomTime();
             String endTime = randomTime();
@@ -80,22 +91,12 @@ class EmployeeControllerTest {
         int minute = new Random().nextInt(60);
         return String.format("%02d:%02d", hour, minute);
     }
-    @Test
-    void getAllEmployees() throws Exception {
-        given(employeeService.getAllEmployees()).willReturn(List.of(employee));
-
-        mockMvc.perform(get("/api/v1/employee")
-                        .accept(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isOk())
-                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                        .andExpect(jsonPath("$.length()",is(1)));
-    }
 
     @Test
     void getEmployeeById() throws Exception {
         given(employeeService.getEmployeeById(employee.getId())).willReturn(employee);
 
-        mockMvc.perform(get("/api/v1/employee/"+ employee.getId())
+        mockMvc.perform(get(EmployeeController.EMPLOYEE_PATH+"/"+ employee.getId())
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id",is(Integer.parseInt(employee.getId().toString()))))
@@ -106,7 +107,7 @@ class EmployeeControllerTest {
     void getEmployeeByPESEL() throws Exception {
         given(employeeService.getEmployeeByPESEL(anyString())).willReturn(employee);
 
-        mockMvc.perform(get("/api/v1/employee/searchbypesel/"+ employee.getPESEL())
+        mockMvc.perform(get(EmployeeController.EMPLOYEE_PATH +"/searchbypesel/"+ employee.getPESEL())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id",is(Integer.parseInt(employee.getId().toString()))))
@@ -117,7 +118,7 @@ class EmployeeControllerTest {
     void getEmployeeByFullName() throws Exception {
         given(employeeService.getEmployeeByfullName(anyString())).willReturn(employee);
 
-        mockMvc.perform(get("/api/v1/employee/searchbyfullname/"+ employee.getFullName())
+        mockMvc.perform(get(EmployeeController.EMPLOYEE_PATH+"/searchbyfullname/"+ employee.getFullName())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id",is(Integer.parseInt(employee.getId().toString()))))
@@ -128,18 +129,19 @@ class EmployeeControllerTest {
     void deleteEmployee() throws Exception {
         when(employeeService.deleteEmployee(anyLong())).thenReturn(true);
 
-        mockMvc.perform(delete("/api/v1/employee/"+ employee.getId() +"/delete")
+        mockMvc.perform(delete(EmployeeController.EMPLOYEE_PATH+"/"+ employee.getId() +"/delete")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted());
 
-        verify(employeeService).deleteEmployee(any());
+        verify(employeeService).deleteEmployee(longArgumentCaptor.capture());
+        assertThat(employee.getId()).isEqualTo(longArgumentCaptor.getValue());
     }
 
     @Test
     void saveEmployee() throws Exception {
         given(employeeService.saveEmployee(any(EmployeeDto.class))).willReturn(employee);
 
-        mockMvc.perform(post("/api/v1/employee/create")
+        mockMvc.perform(post(EmployeeController.EMPLOYEE_PATH + "/create")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee))) // Include the serialized employee object in the request body
@@ -148,7 +150,7 @@ class EmployeeControllerTest {
 
     @Test
     void updateEmployee() throws Exception {
-        mockMvc.perform(put("/api/v1/employee/"+employee.getId()+"/update")
+        mockMvc.perform(put(EmployeeController.EMPLOYEE_PATH+"/"+employee.getId()+"/update")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(employee)));
@@ -158,12 +160,20 @@ class EmployeeControllerTest {
 
     @Test
     void PatchEmployee() throws Exception {
-        mockMvc.perform(patch("/api/v1/employee/"+employee.getId()+"/update")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(employee)));
+        Map<String,Object> employeeMap = new HashMap<>();
+        employeeMap.put("employeeName","New Name");
 
-        verify(employeeService).patchEmployee(anyLong(),any(EmployeeDto.class));
+        when(employeeService.patchEmployee(anyLong(), any(EmployeeDto.class))).thenReturn(employee);
+
+        mockMvc.perform(patch(EmployeeController.EMPLOYEE_PATH+"/"+employee.getId()+"/update")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeMap)))
+                .andExpect(status().isAccepted());
+
+        verify(employeeService).patchEmployee(longArgumentCaptor.capture(),employeeDtoArgumentCaptor.capture());
+
+        assertThat(employee.getId()).isEqualTo(longArgumentCaptor.getValue());
     }
 
     @Test
@@ -172,7 +182,8 @@ class EmployeeControllerTest {
         when(employeeService.getMonthTax(1L, 5)).thenReturn(Map.of("IncomeTax", 200.00));
         when(employeeService.getMonthSalary(1L, 5)).thenReturn(5000.00);
 
-        mockMvc.perform(get("/api/v1/employee/" + 1L + "/salary?month=5")
+        mockMvc.perform(get(EmployeeController.EMPLOYEE_PATH+"/" + 1L + "/salary")
+                        .param("month", "5")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.employeeId").value(1L))

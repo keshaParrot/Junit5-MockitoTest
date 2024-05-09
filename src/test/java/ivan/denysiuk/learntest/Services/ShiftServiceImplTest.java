@@ -2,14 +2,12 @@ package ivan.denysiuk.learntest.Services;
 
 import ivan.denysiuk.learntest.Repository.EmployeeRepository;
 import ivan.denysiuk.learntest.Repository.ShiftRepository;
-import ivan.denysiuk.learntest.domain.dto.EmployeeDto;
 import ivan.denysiuk.learntest.domain.dto.ShiftDto;
 import ivan.denysiuk.learntest.domain.entity.Employee;
 import ivan.denysiuk.learntest.domain.entity.Shift;
 import ivan.denysiuk.learntest.domain.mapper.ShiftMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -97,7 +95,8 @@ class ShiftServiceImplTest {
 
     @Test
     void addShift() {
-        shiftService.saveShift(shift);
+        when(employeeRepository.getEmployeeById(anyLong())).thenReturn(employee);
+        shiftService.saveShift(getShiftFromDto(shift));
 
         verify(shiftRepository, times(1)).save(shift);
     }
@@ -118,27 +117,25 @@ class ShiftServiceImplTest {
                 .date(LocalDate.of(2022,2,2))
                 .startTime("14:40")
                 .endTime("19:50")
-                .employee(
-                        EmployeeDto.builder()
-                        .firstName("Iga")
-                        .build()
-                )
+                .employeeId(1L)
                 .build();
 
         when(shiftRepository.getShiftById(anyLong())).thenReturn(shift);
         when(shiftService.patchShift(anyLong(), newShift)).thenReturn(shift);
+        when(employeeRepository.getEmployeeById(anyLong())).thenReturn(employee);
 
         Shift updatedShift = shiftService.patchShift(2L,newShift);
 
         assertEquals(LocalDate.of(2022,2,2), updatedShift.getDate());
         assertEquals("14:40", updatedShift.getStartTime());
-        assertEquals("Iga", updatedShift.getEmployee().getFirstName());
+        assertEquals("Adam", updatedShift.getEmployee().getFirstName());
         assertEquals("12:30",updatedShift.getActualStartTime());
     }
 
     @Test
     void updateShift() {
-        ShiftDto shiftDto = getShiftDto(shift);
+        ShiftDto shiftDto = getShiftFromDto(shift);
+        when(employeeRepository.getEmployeeById(anyLong())).thenReturn(employee);
 
         shiftService.updateShift(1L,shiftDto);
 
@@ -154,7 +151,7 @@ class ShiftServiceImplTest {
 
         assertEquals(expectedCount, actualCount, "The count of employees should match the expected count");
     }
-    ShiftDto getShiftDto(Shift shift){
+    ShiftDto getShiftFromDto(Shift shift){
         return ShiftMapper.INSTANCE.ShiftToDto(shift);
     }
 }

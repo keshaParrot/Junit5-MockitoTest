@@ -34,7 +34,11 @@ public class Shift implements Comparable<Shift>{
 
 
 
-    public HoursClass getWorkedTime(){
+    public HoursClass getWorkedTime() {
+        if (this.actualStartTime == null || this.actualEndTime == null) {
+            return null; 
+        }
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         LocalTime localStartTime = LocalTime.parse(this.actualStartTime, formatter);
         LocalTime localEndTime = LocalTime.parse(this.actualEndTime, formatter);
