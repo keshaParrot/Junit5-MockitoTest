@@ -6,12 +6,15 @@ import ivan.denysiuk.learntest.domain.dto.EmployeeDto;
 import ivan.denysiuk.learntest.domain.entity.Employee;
 import ivan.denysiuk.learntest.domain.mapper.EmployeeMapper;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+
 /**
  * Service giving access to employee entity repository
  * Service implement different methods for getting, saving, update employee to database.
@@ -29,8 +32,9 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @return list of all employee
      */
     @Override
-    public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
+    public Page<Employee> getAllEmployees(int numberOfPage, int pageSize) {
+        Pageable pageable = PageRequest.of(numberOfPage, pageSize);
+        return employeeRepository.findAll(pageable);
     }
 
     /**
@@ -192,7 +196,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @param month the month for which the tax should be calculated
      * @return Map of the all taxes selected by the employee id
      */
-    @Override
+    @Override //TODO need to change little bit this method for 26 years old workers
     public Map<String, Double> getMonthTax(Long id, int month) {
         Map<String,Double> mapOfTax = new HashMap<>();
 
@@ -242,9 +246,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         Map<String,Double> mapOfTax = getMonthTax(id, month);
         double totalTax = mapOfTax.values().stream().mapToDouble(Double::doubleValue).sum();
 
-        return Math.round(employeeSalary - totalTax * 100.0) / 100.0;
+        return Double.parseDouble(String.format("%.2f", employeeSalary-totalTax).replace(',', '.'));
     }
     public Employee getEmployeeFromDto(EmployeeDto employeeDto){
         return EmployeeMapper.INSTANCE.dtoToEmployee(employeeDto);
     }
 }
+

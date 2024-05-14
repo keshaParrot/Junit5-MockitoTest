@@ -13,6 +13,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -43,8 +46,8 @@ class EmployeeServiceImplTest {
                     .date(LocalDate.of(2024,5,5))
                     .startTime(startTime)
                     .endTime(endTime)
-                    .actualStartTime(startTime)
-                    .actualEndTime(endTime)
+                    .actualStartTime("00:01")
+                    .actualEndTime("23:59")
                     .employee(null)
                     .build();
         }).limit(5);
@@ -72,12 +75,14 @@ class EmployeeServiceImplTest {
 
     @Test
     void getAllEmployees_whenEmployeesExistOnDB_notNull() {
-        List<Employee> savedEmployee = List.of(employee1);
+        Page<Employee> mockedPage = new PageImpl<>(List.of(employee1, new Employee()));
 
-        Mockito.when(employeeRepository.findAll()).thenReturn(savedEmployee);
+        Mockito.when(employeeRepository.findAll(PageRequest.of(0, 2))).thenReturn(mockedPage);
 
-        List<Employee> allEmployee = employeeService.getAllEmployees();
-        assertEquals(savedEmployee.size(),allEmployee.size());
+        Page<Employee> pagedEmployee = employeeService.getAllEmployees(0,2);
+        List<Employee> allEmployee = pagedEmployee.getContent();
+
+        assertEquals(2,allEmployee.size());
     }
 
     @Test
@@ -110,6 +115,7 @@ class EmployeeServiceImplTest {
     @Test
     void updateEmployeeOnDatabase() {
         Employee convertedEmployee = getEmployeeFromDto(employee2);
+        convertedEmployee.setId(0L);
 
         employeeService.updateEmployee(anyLong(),employee2);
 

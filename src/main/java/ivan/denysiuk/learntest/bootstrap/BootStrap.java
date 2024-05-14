@@ -4,6 +4,8 @@ import ivan.denysiuk.learntest.Repository.EmployeeRepository;
 import ivan.denysiuk.learntest.Repository.ShiftRepository;
 import ivan.denysiuk.learntest.Services.ShiftServiceImpl;
 import ivan.denysiuk.learntest.Services.interfaces.EmployeeService;
+import ivan.denysiuk.learntest.Services.interfaces.ShiftService;
+import ivan.denysiuk.learntest.domain.HoursClass;
 import ivan.denysiuk.learntest.domain.entity.Employee;
 import ivan.denysiuk.learntest.domain.entity.Shift;
 import lombok.AllArgsConstructor;
@@ -24,36 +26,45 @@ public class BootStrap implements CommandLineRunner {
     EmployeeRepository employeeRepository;
     ShiftRepository shiftRepository;
     EmployeeService employeeService;
-    ShiftServiceImpl shiftService;
-
+    ShiftService shiftService;
     @Override
     public void run(String... args){
         Employee employee = Employee.builder()
+                .id(1L)
                 .firstName("Adam")
                 .lastName("Kowalski")
                 .PESEL("03947283728")
-                .rate(23.5)
+                .rate(25.3)
                 .build();
-        Employee savedEmployee = employeeRepository.save(employee);
 
+        employee = employeeRepository.save(employee);
+
+        Employee finalEmployee = employee;
         Stream<Shift> randomShifts = Stream.generate(() -> {
+            String startTime = randomTime();
+            String endTime = randomTime();
             return Shift.builder()
-                    .station("Station " + (new Random().nextInt(10) + 1))
+                    .station("Station " + (new Random().nextInt(90) + 1))
                     .date(LocalDate.of(2024,5,5))
-                    .startTime("10:00")
-                    .endTime("20:00")
-                    .actualStartTime("10:00")
-                    .actualEndTime("20:00")
-                    .employee(employeeRepository.getEmployeeById(savedEmployee.getId()))
+                    .startTime(startTime)
+                    .endTime(endTime)
+                    .actualStartTime("00:00")
+                    .actualEndTime("14:24")
+                    .employee(finalEmployee)
                     .build();
-        }).limit(5);
+        }).limit(10);
 
-        List<Shift> savedShifts = shiftRepository.saveAll(randomShifts.collect(Collectors.toList()));
+        shiftRepository.saveAll(randomShifts.collect(Collectors.toList()));
 
+        System.out.println(employeeRepository.getEmployeeById(1L));
 
-        System.out.println(employeeService.getAllEmployees());
-        System.out.println("salary= "+employeeService.getMonthSalary(1L,5));
-        System.out.println("tax= "+employeeService.getMonthTax(1L,5));
-        System.out.println("Revenue= "+employeeService.getMonthRevenue(1L,5));
+        System.out.println(employeeService.getMonthSalary(1L,5));
+        System.out.println(employeeService.getMonthTax(1L,5));
+        System.out.println(employeeService.getMonthRevenue(1L,5));
+    }
+    private String randomTime() {
+        int hour = new Random().nextInt(24);
+        int minute = new Random().nextInt(60);
+        return String.format("%02d:%02d", hour, minute);
     }
 }

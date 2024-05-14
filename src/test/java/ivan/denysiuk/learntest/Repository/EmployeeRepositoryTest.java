@@ -39,7 +39,7 @@ class EmployeeRepositoryTest {
         employeeRepository.save(employee);
         Long employeeId = employeeRepository.findAll().get(0).getId();
 
-        Employee expectedEmployee = employeeRepository.getEmployeeById(employeeId);
+        Employee expectedEmployee = employeeRepository.findById(employeeId).orElseThrow(NoSuchElementException::new);
 
         Assertions.assertThat(expectedEmployee).isNotNull();
         Assertions.assertThat(expectedEmployee.getId()).isGreaterThan(0);

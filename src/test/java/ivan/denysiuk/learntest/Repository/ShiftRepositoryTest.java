@@ -69,7 +69,7 @@ class ShiftRepositoryTest {
         shiftRepository.save(shift);
 
         Long shiftId = shiftRepository.findAll().get(0).getId();
-        Shift shift2 = shiftRepository.getShiftById(shiftId);
+        Shift shift2 = shiftRepository.findById(shiftId).orElseThrow(NoSuchElementException::new);
 
         Assertions.assertThat(shift2).isNotNull();
     }

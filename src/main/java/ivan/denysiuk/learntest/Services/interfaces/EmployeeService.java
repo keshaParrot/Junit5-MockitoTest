@@ -2,15 +2,14 @@ package ivan.denysiuk.learntest.Services.interfaces;
 
 import ivan.denysiuk.learntest.domain.dto.EmployeeDto;
 import ivan.denysiuk.learntest.domain.entity.Employee;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 
 @Service
 public interface EmployeeService {
-
-    List<Employee> getAllEmployees();
+    Page<Employee> getAllEmployees(int numberOfElement, int numberOfPage);
     Employee getEmployeeById(Long id);
     Employee getEmployeeByPESEL(String pesel);
     Employee getEmployeeByfullName(String fullName);

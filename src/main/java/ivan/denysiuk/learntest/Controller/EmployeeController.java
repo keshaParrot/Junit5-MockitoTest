@@ -13,7 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -26,6 +28,27 @@ public class EmployeeController {
     public static final String EMPLOYEE_PATH_ID = EMPLOYEE_PATH + "/{id}";
     private final EmployeeService employeeService;
 
+    /**
+     *
+     * @param numberOfPage
+     * @param pageSize
+     * @return
+     */
+    @GetMapping(EMPLOYEE_PATH)
+    public ResponseEntity<List<EmployeeDto>> getAllEmployee(@RequestParam("numberOfPage")int numberOfPage,
+                                                            @RequestParam("pageSize")int pageSize){
+
+        List<Employee> allEmployees = employeeService.getAllEmployees(numberOfPage,pageSize).getContent();
+        System.out.println(allEmployees);
+        if (!allEmployees.isEmpty()) {
+            List<EmployeeDto> employeeDtos = allEmployees.stream()
+                    .map(this::getDtoFromEmployee)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(employeeDtos);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
     /**
      *
      * @param id

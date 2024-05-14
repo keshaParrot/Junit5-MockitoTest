@@ -37,6 +37,7 @@ public class EmployeeDto {
     @NotNull(message = "Date of birth cannot be null")
     @Past(message = "Date of birth must be in the past")
     private LocalDate dateOfBirthday;
+    @NotNull(message = "pesel cannot be null")
     @Pattern(regexp = "\\d{11}", message = "Invalid pesel number format")
     private String PESEL;
     @NotBlank(message = "ZUS index cannot be empty")

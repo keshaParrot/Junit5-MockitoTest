@@ -1,6 +1,5 @@
 package ivan.denysiuk.learntest.Controller;
 
-import ivan.denysiuk.learntest.Services.interfaces.EmployeeService;
 import ivan.denysiuk.learntest.Services.interfaces.ShiftService;
 import ivan.denysiuk.learntest.domain.dto.ShiftDto;
 import ivan.denysiuk.learntest.domain.entity.Shift;
@@ -11,11 +10,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @AllArgsConstructor
@@ -39,7 +40,7 @@ public class ShiftController {
     }
     @GetMapping(SHIFT_PATH_ID)
     public ResponseEntity<ShiftDto> getShiftById(@PathVariable("id") Long id){
-        ShiftDto shiftDto = getShiftDto(shiftService.getShiftById(id));
+        ShiftDto shiftDto = getDtoFromShift(shiftService.getShiftById(id));
 
         if (shiftDto==null){
             return ResponseEntity.notFound().build();
@@ -58,13 +59,13 @@ public class ShiftController {
                             monthFrom.orElseGet(() -> YearMonth.of(2020, 2)),
                             monthTo.orElseGet(YearMonth::now))
                     .stream()
-                    .map(this::getShiftDto)
+                    .map(this::getDtoFromShift)
                     .toList();
         }
         else {
             allEmployeeShift = shiftService.getAllShiftByEmployee(employeeId.get())
                     .stream()
-                    .map(this::getShiftDto)
+                    .map(this::getDtoFromShift)
                     .toList();
         }
         return ResponseEntity.ok(allEmployeeShift);
@@ -92,24 +93,37 @@ public class ShiftController {
             return ResponseEntity.badRequest().headers(headers).body(shiftDto);
         }
         if(updatedShift != null) {
-            return new ResponseEntity<>(getShiftDto(updatedShift), HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(getDtoFromShift(updatedShift), HttpStatus.ACCEPTED);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
     @PatchMapping(SHIFT_PATH_ID+"/update")
     public ResponseEntity<ShiftDto> patchShift(@PathVariable("id") Long id,
-                                               @Valid @RequestBody ShiftDto shiftDto){
+                                               @Valid @RequestBody ShiftDto shiftDto,
+                                               BindingResult bindingResult){
+        if(bindingResult.hasErrors()){
+            List<FieldError> errors = bindingResult.getFieldErrors().stream()
+                    .filter(fieldError -> "startTime".equals(fieldError.getField()) || "endTime".equals(fieldError.getField()))
+                    .toList();
+
+            if (!errors.isEmpty()){
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Errors", errors.stream()
+                        .map(FieldError::getDefaultMessage)
+                        .collect(Collectors.joining("\n")));
+                return ResponseEntity.badRequest().headers(headers).body(shiftDto);
+            }
+        }
+
         Shift updatedShift = shiftService.patchShift(id,shiftDto);
 
         if(updatedShift != null) {
-            return new ResponseEntity<>(getShiftDto(updatedShift), HttpStatus.ACCEPTED);
-        } else {
+            return new ResponseEntity<>(getDtoFromShift(updatedShift), HttpStatus.ACCEPTED);
+        }
+        else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-    }
-    ShiftDto getShiftDto(Shift shift){
-        return ShiftMapper.INSTANCE.ShiftToDto(shift);
     }
     Shift getShiftFromDto(ShiftDto shiftDto){
         return ShiftMapper.INSTANCE.DtoToShift(shiftDto);

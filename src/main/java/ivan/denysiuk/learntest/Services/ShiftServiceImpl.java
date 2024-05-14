@@ -4,6 +4,7 @@ import ivan.denysiuk.learntest.Repository.EmployeeRepository;
 import ivan.denysiuk.learntest.Repository.ShiftRepository;
 import ivan.denysiuk.learntest.Services.interfaces.ShiftService;
 import ivan.denysiuk.learntest.domain.dto.ShiftDto;
+import ivan.denysiuk.learntest.domain.entity.Employee;
 import ivan.denysiuk.learntest.domain.entity.Shift;
 import ivan.denysiuk.learntest.domain.mapper.ShiftMapper;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -76,7 +78,8 @@ public class ShiftServiceImpl implements ShiftService {
     @Override
     public Shift saveShift(ShiftDto shiftDto) {
         Shift shift = getShiftFromDto(shiftDto);
-        shift.setEmployee(employeeRepository.getEmployeeById(shiftDto.getEmployeeId()));
+        Employee employee = employeeRepository.getEmployeeById(shiftDto.getEmployeeId());
+        shift.setEmployee(employee);
         return shiftRepository.save(shift);
     }
     /**
@@ -98,7 +101,7 @@ public class ShiftServiceImpl implements ShiftService {
      * @return
      */
     @Override
-    public Shift patchShift(Long shiftId, ShiftDto updatedShift){
+    public Shift patchShift(Long shiftId, ShiftDto updatedShift){ //TODO need to handle get employee with situation when employee now exist on DB
         Shift shift = shiftRepository.getShiftById(shiftId);
 
         if(StringUtils.hasText(updatedShift.getStation())){

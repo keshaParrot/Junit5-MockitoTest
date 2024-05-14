@@ -1,10 +1,15 @@
 package ivan.denysiuk.learntest.Services
 
 import ivan.denysiuk.learntest.Repository.EmployeeRepository
+import ivan.denysiuk.learntest.domain.HoursClass
 import ivan.denysiuk.learntest.domain.dto.EmployeeDto
 import ivan.denysiuk.learntest.domain.entity.Employee
 import ivan.denysiuk.learntest.domain.entity.Shift
 import ivan.denysiuk.learntest.domain.mapper.EmployeeMapper
+import org.mockito.Mockito
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Subject
@@ -12,6 +17,8 @@ import spock.lang.Subject
 import java.time.LocalDate
 import java.util.stream.Collectors
 import java.util.stream.Stream
+
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 class EmployeeServiceImplTestSpock extends Specification {
 
@@ -27,24 +34,22 @@ class EmployeeServiceImplTestSpock extends Specification {
             String startTime = randomTime()
             String endTime = randomTime()
             return Shift.builder()
-                    .station("Station " + (new Random().nextInt(10) + 1))
+                    .station("Station " + (new Random().nextInt(99) + 1))
                     .date(LocalDate.of(2024,5,5))
                     .startTime(startTime)
                     .endTime(endTime)
-                    .actualStartTime("10:00")
-                    .actualEndTime("20:00")
+                    .actualStartTime("00:00")
+                    .actualEndTime("14:24")
                     .employee(null)
                     .build()
-        }).limit(5)
-
-
+        }).limit(10)
 
         def employee = Employee.builder()
                 .id(1L)
                 .firstName("Adam")
                 .lastName("Kowalski")
                 .PESEL("03947283728")
-                .rate(23.5)
+                .rate(25.3)
                 .workedShift(randomShifts.collect(Collectors.toUnmodifiableSet()))
                 .build()
 
@@ -65,11 +70,16 @@ class EmployeeServiceImplTestSpock extends Specification {
         return String.format("%02d:%02d", hour, minute)
     }
     def "GetAllEmployees"() {
+        given:
+            Page<Employee> mockedPage = new PageImpl<>(listOfEmployee)
+
         when:
-            employeeRepository.findAll() >> listOfEmployee
-            def result = employeeService.getAllEmployees()
+            employeeRepository.findAll(PageRequest.of(0, 1)) >> mockedPage
+            Page<Employee> pagedEmployee = employeeService.getAllEmployees(0,1);
+            List<Employee> allEmployee = pagedEmployee.getContent();
         then:
-            result == listOfEmployee
+            allEmployee == listOfEmployee
+
     }
 
     def "GetEmployeeById"() {
@@ -169,7 +179,7 @@ class EmployeeServiceImplTestSpock extends Specification {
             salary == result
         where:
             employeeId  | result
-            1L          | 1175.0
+            1L          | 3643.2
             2L          | 0.0
     }
 
@@ -191,7 +201,7 @@ class EmployeeServiceImplTestSpock extends Specification {
             salary == result
         where:
             employeeId  | result
-            1L          | 1175.0
+            1L          | 3094.03
             2L          | 0.0
     }
 

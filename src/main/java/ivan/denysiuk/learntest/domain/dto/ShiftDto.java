@@ -1,12 +1,11 @@
 package ivan.denysiuk.learntest.domain.dto;
 
-import ivan.denysiuk.learntest.domain.entity.Employee;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,8 +27,10 @@ public class ShiftDto {
     @NotNull(message = "Date cannot be empty")
     private LocalDate date;
     @NotBlank(message = "Start time cannot be empty")
+    @Pattern(regexp = "^([01]\\d|2[0-3]):([0-5]\\d)$", message = "Start time must be in the format HH:MM")
     private String startTime;
     @NotBlank(message = "End time cannot be empty")
+    @Pattern(regexp = "^([01]\\d|2[0-3]):([0-5]\\d)$", message = "End time must be in the format HH:MM")
     private String endTime;
     private String actualStartTime;
     private String actualEndTime;

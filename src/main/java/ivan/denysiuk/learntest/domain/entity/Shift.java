@@ -2,18 +2,17 @@ package ivan.denysiuk.learntest.domain.entity;
 
 import ivan.denysiuk.learntest.domain.HoursClass;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 @Entity
-@Data
+@Setter
+@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -29,10 +28,8 @@ public class Shift implements Comparable<Shift>{
     private String endTime;
     private String actualStartTime;
     private String actualEndTime;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     Employee employee;
-
-
 
     public HoursClass getWorkedTime() {
         if (this.actualStartTime == null || this.actualEndTime == null) {
@@ -62,6 +59,31 @@ public class Shift implements Comparable<Shift>{
         return 0;
     }
 
+    public String safetyToString() {
+        return "Shift{" +
+                "id=" + id +
+                ", station='" + station + '\'' +
+                ", date=" + date +
+                ", startTime='" + startTime + '\'' +
+                ", endTime='" + endTime + '\'' +
+                ", actualStartTime='" + actualStartTime + '\'' +
+                ", actualEndTime='" + actualEndTime + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Shift shift = (Shift) o;
+        return Objects.equals(id, shift.id) && Objects.equals(station, shift.station) && Objects.equals(date, shift.date) && Objects.equals(startTime, shift.startTime) && Objects.equals(endTime, shift.endTime) && Objects.equals(actualStartTime, shift.actualStartTime) && Objects.equals(actualEndTime, shift.actualEndTime) && Objects.equals(employee, shift.employee);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, station, date, startTime, endTime, actualStartTime, actualEndTime, employee);
+    }
+
     @Override
     public String toString() {
         return "Shift{" +
@@ -72,7 +94,7 @@ public class Shift implements Comparable<Shift>{
                 ", endTime='" + endTime + '\'' +
                 ", actualStartTime='" + actualStartTime + '\'' +
                 ", actualEndTime='" + actualEndTime + '\'' +
-                ", employee=" + employee +
-                '}';
+                (employee!=null? ", employee=" + employee.safetyToString() +
+                '}':"}");
     }
 }

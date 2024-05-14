@@ -1,10 +1,10 @@
 package ivan.denysiuk.learntest.Repository;
 
 import ivan.denysiuk.learntest.domain.entity.Employee;
-import ivan.denysiuk.learntest.domain.entity.Shift;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 /**
  * Repository for working with Shifts table on database.
@@ -12,13 +12,15 @@ import org.springframework.data.repository.query.Param;
 public interface EmployeeRepository extends JpaRepository<Employee,Long> {
 
     /**
-     * Searching employee by id
-     *
-     * @param id of the searched employee
-     * @return the searched employee
-     */
-    @Query("select e from Employee e left join fetch e.workedShift where e.id = :id")
-    Employee getEmployeeById(@Param("id") Long id);
+    * Searching employee by id
+    *
+    * @param id of the searched employee
+    * @return the searched employee
+    */
+    @Query("select e from Employee e where e.id = :id")
+    Employee getEmployeeById(Long id);
+    @Query("SELECT e FROM Employee e Left JOIN FETCH e.workedShift")
+    List<Employee> findAllWithShifts();
     /**
      * Searching employee by full name
      *
