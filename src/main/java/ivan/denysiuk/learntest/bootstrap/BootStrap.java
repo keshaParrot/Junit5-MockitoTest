@@ -1,20 +1,16 @@
 package ivan.denysiuk.learntest.bootstrap;
 
-import ivan.denysiuk.learntest.Repository.EmployeeRepository;
-import ivan.denysiuk.learntest.Repository.ShiftRepository;
-import ivan.denysiuk.learntest.Services.ShiftServiceImpl;
-import ivan.denysiuk.learntest.Services.interfaces.EmployeeService;
-import ivan.denysiuk.learntest.Services.interfaces.ShiftService;
-import ivan.denysiuk.learntest.domain.HoursClass;
-import ivan.denysiuk.learntest.domain.entity.Employee;
-import ivan.denysiuk.learntest.domain.entity.Shift;
+import ivan.denysiuk.learntest.repositories.EmployeeRepository;
+import ivan.denysiuk.learntest.repositories.ShiftRepository;
+import ivan.denysiuk.learntest.services.interfaces.EmployeeService;
+import ivan.denysiuk.learntest.services.interfaces.ShiftService;
+import ivan.denysiuk.learntest.domains.entities.Employee;
+import ivan.denysiuk.learntest.domains.entities.Shift;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
